@@ -9,6 +9,7 @@ to setup
   reset-ticks
 end
 
+
 to setup-patches
   ask patches[
     let x 28
@@ -21,6 +22,7 @@ to setup-patches
   ]
 end
 
+; dar setup aos agents
 to setup-agents
   create-mice N-mice
   [
@@ -40,6 +42,7 @@ to setup-agents
   ]
 end
 
+; executa quando carrega no button go
 to go
   move-mice
   move-cats
@@ -49,7 +52,9 @@ to go
 end
 
 
-
+; mover rato
+; aqui vamos definir planos de fuga
+; mudanças de cadência
 to move-mice
   ask mice[
     let x one-of neighbors
@@ -57,6 +62,7 @@ to move-mice
   ]
 end
 
+; mover gatos
 to move-cats
   ask cats[
     if  patch-ahead 1 != nobody [set a patch-ahead 1]
@@ -71,13 +77,14 @@ to move-cats
     if random 100 < 25
     [set heading one-of [0 90 180 270]]
 
+    ; criar uma presa e definir target
     let prey one-of out-link-neighbors
     set-target prey
-
   ]
 end
 
 
+; definir target ou correr atrás do target
 to set-target [ target ]
   ; basicamente se não existir presa cria tenta encontrar um novo target
     ifelse target != nobody [
@@ -88,6 +95,7 @@ to set-target [ target ]
 end
 
 
+; se o gato estiver em cima do rato , o rato morre
 to lunch-time
   ask mice[
     if any? cats-on neighbors [die]
@@ -130,7 +138,7 @@ N-mice
 N-mice
 0
 20
-2.0
+5.0
 1
 1
 NIL

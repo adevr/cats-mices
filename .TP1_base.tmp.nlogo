@@ -200,9 +200,9 @@ NIL
 1
 
 MONITOR
-10
+309
 500
-638
+374
 545
 NIL
 ticks

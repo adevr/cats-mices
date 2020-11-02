@@ -58,6 +58,10 @@ end
 to move-mice
   ask mice[
     let x one-of neighbors
+    let surrounding_cat sum [count cats] of neighbors
+    if surrounding_cat > 0[
+      forward 2
+    ]
     move-to x
   ]
 end
@@ -65,12 +69,14 @@ end
 ; mover gatos
 to move-cats
   ask cats[
+
     if  patch-ahead 1 != nobody [set a patch-ahead 1]
     if patch-ahead 2 != nobody [set b patch-ahead 2]
     if patch-right-and-ahead 90 1 != nobody [set c patch-right-and-ahead 90 1]
     if patch-right-and-ahead -90 1 != nobody [set d patch-right-and-ahead -90 1]
     if patch-right-and-ahead 45 1 != nobody [set w patch-right-and-ahead 45 1]
     if patch-right-and-ahead -45 1 != nobody [set z patch-right-and-ahead -45 1]
+
     let y (patch-set a b c d w z)
     let x one-of y
     move-to x

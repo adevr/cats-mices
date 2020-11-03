@@ -111,7 +111,7 @@ end
 
 ; definir target ou correr atrás do target
 to set-target [ target ]
-  if mirarPresa = true [
+  if ativateRationalBehaviour = true [
     ; basicamente se não existir presa cria tenta encontrar um novo target
     ifelse target != nobody [
       face target
@@ -121,9 +121,10 @@ to set-target [ target ]
     ]
   ]
 end
+
 ; mirar presa
 to link-target
-  if mirarPresa = true [
+  if ativateRationalBehaviour = true [
     create-link-to one-of mice
   ]
 end
@@ -431,11 +432,11 @@ HORIZONTAL
 SWITCH
 11
 322
-199
+206
 355
-mirarPresa
-mirarPresa
-1
+ativateRationalBehaviour
+ativateRationalBehaviour
+0
 1
 -1000
 

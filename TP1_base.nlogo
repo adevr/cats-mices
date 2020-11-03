@@ -38,7 +38,7 @@ to setup-agents
     let x one-of patches with [not any? mice-here and not any? mice-on neighbors and not any? cats-here]
     setxy [pxcor] of x [pycor] of x
     set heading one-of [0 90 180 270]
-    create-link-to one-of mice
+    link-target
   ]
 end
 
@@ -49,6 +49,7 @@ to go
   lunch-time
   tick
   if count mice = 0 [stop]
+  if count cats = 0 [stop]
 end
 
 
@@ -69,53 +70,117 @@ end
 ; mover gatos
 to move-cats
   ask cats[
+    let velocity get-velocity
+    ; criar uma presa e definir target
+    let prey one-of out-link-neighbors
+    set-target prey
 
-    if  patch-ahead 1 != nobody [set a patch-ahead 1]
-    if patch-ahead 2 != nobody [set b patch-ahead 2]
-    if patch-right-and-ahead 90 1 != nobody [set c patch-right-and-ahead 90 1]
-    if patch-right-and-ahead -90 1 != nobody [set d patch-right-and-ahead -90 1]
-    if patch-right-and-ahead 45 1 != nobody [set w patch-right-and-ahead 45 1]
-    if patch-right-and-ahead -45 1 != nobody [set z patch-right-and-ahead -45 1]
+    if patch-ahead 1 != nobody [
+      set a patch-ahead velocity
+    ]
+    if patch-ahead 2 != nobody [
+      set b patch-ahead (velocity + 1)
+    ]
+    if patch-right-and-ahead 90 velocity != nobody [
+      set c patch-right-and-ahead 90 velocity
+    ]
+    if patch-right-and-ahead -90 velocity != nobody [
+      set d patch-right-and-ahead -90 velocity
+    ]
+    if patch-right-and-ahead 45 velocity != nobody [
+      set w patch-right-and-ahead 45 velocity
+    ]
+    if patch-right-and-ahead -45 velocity != nobody [
+      set z patch-right-and-ahead -45 velocity
+    ]
+
+    if mutacaoPercecaoGato = true [
+      setup-mutation-perception "cats"
+    ]
 
     let y (patch-set a b c d w z)
     let x one-of y
     move-to x
-    if random 100 < 25
-    [set heading one-of [0 90 180 270]]
 
-    ; criar uma presa e definir target
-    let prey one-of out-link-neighbors
-    set-target prey
+    if random 100 < 25 [
+      set heading one-of [0 90 180 270]
+    ]
   ]
 end
 
 
 ; definir target ou correr atrás do target
 to set-target [ target ]
-  ; basicamente se não existir presa cria tenta encontrar um novo target
+  if mirarPresa = true [
+    ; basicamente se não existir presa cria tenta encontrar um novo target
     ifelse target != nobody [
       face target
-    ] [
-        create-link-to one-of mice
     ]
+    [
+      link-target
+    ]
+  ]
 end
+; mirar presa
+to link-target
+  if mirarPresa = true [
+    create-link-to one-of mice
+  ]
+end
+
 
 
 ; se o gato estiver em cima do rato , o rato morre
 to lunch-time
   ask mice[
     if any? cats-on neighbors [die]
+    if any? cats-on patch-here [die]
   ]
+end
+
+; se a o switch mutacaoVelocidadeGato tiver aativa, a velocidade de deslocamento é aumentada para o dobro
+to-report get-velocity
+  let velocidade 1
+  if mutacaoVelocidadeGato = true [
+    set velocidade 2
+  ]
+
+  report velocidade
+end
+
+; faz o setup da mutação da perceção nos agentes passados em argumento
+to setup-mutation-perception [agent]
+  let perception 2
+  let chunk_degree 22.5
+  let degree_acc 0
+
+  ifelse agent = "cats" [
+    if patch-ahead 2 != nobody [
+      set b patch-ahead (perception)
+    ]
+
+    while [degree_acc <= 360] [
+
+      ask cats [
+        if any? mice-on patch-right-and-ahead degree_acc perception [
+          move-to patch-right-and-ahead degree_acc perception
+        ]
+      ]
+
+      set degree_acc (degree_acc + chunk_degree)
+    ]
+
+  ][]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-656
+699
 10
-1479
-834
+1293
+605
 -1
 -1
-24.7
+17.76
 1
 10
 1
@@ -144,7 +209,7 @@ N-mice
 N-mice
 0
 20
-14.0
+15.0
 1
 1
 NIL
@@ -159,7 +224,7 @@ N-cats
 N-cats
 0
 10
-5.0
+2.0
 1
 1
 NIL
@@ -362,6 +427,17 @@ energiaConsumidaNoRatoPorAcao
 1
 NIL
 HORIZONTAL
+
+SWITCH
+11
+322
+199
+355
+mirarPresa
+mirarPresa
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

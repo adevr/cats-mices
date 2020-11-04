@@ -63,6 +63,10 @@ to move-mice
     ifelse surrounding_cat > 0[
       set x patch-right-and-ahead 90 3
     ][ set x patch-ahead 1 ]
+
+    if mutacaoPercecaoRato = true [
+      setup-mutation-perception "mice"
+    ]
     move-to x
   ]
 end
@@ -156,12 +160,11 @@ to setup-mutation-perception [agent]
   let chunk_degree 22.5
   let degree_acc 0
 
-  ifelse agent = "cats" [
-    if patch-ahead 2 != nobody [
-      set b patch-ahead (perception)
-    ]
-
-    while [degree_acc <= 360] [
+  while [degree_acc <= 360] [
+    ifelse agent = "cats" [
+      ;if patch-ahead 2 != nobody [
+      ;  set b patch-ahead (perception)
+      ;]
 
       ask cats [
         if any? mice-on patch-right-and-ahead degree_acc perception [
@@ -169,10 +172,32 @@ to setup-mutation-perception [agent]
         ]
       ]
 
-      set degree_acc (degree_acc + chunk_degree)
-    ]
+    ][
+      ask mice [
+        let mice_front_perception 3
+        let front_perception_chunk 15
+        let front_perception_degree_acc 30
 
-  ][]
+        while [front_perception_degree_acc <= -30][
+          ask patch-right-and-ahead front_perception_degree_acc mice_front_perception [
+            set pcolor red
+          ]
+
+          if any? cats-on patch-right-and-ahead front_perception_degree_acc mice_front_perception [
+            set heading 90
+            move-to patch-right-and-ahead 0 perception
+          ]
+
+          set front_perception_degree_acc (front_perception_degree_acc - front_perception_chunk)
+        ]
+
+
+
+
+      ]
+    ]
+    set degree_acc (degree_acc + chunk_degree)
+   ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -355,7 +380,7 @@ SWITCH
 273
 mutacaoPercecaoRato
 mutacaoPercecaoRato
-1
+0
 1
 -1000
 
@@ -366,7 +391,7 @@ SWITCH
 274
 mutacaoPercecaoGato
 mutacaoPercecaoGato
-1
+0
 1
 -1000
 

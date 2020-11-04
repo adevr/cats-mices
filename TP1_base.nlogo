@@ -60,9 +60,9 @@ to move-mice
   ask mice[
     let x one-of neighbors
     let surrounding_cat sum [count cats] of neighbors
-    if surrounding_cat > 0[
-      forward 2
-    ]
+    ifelse surrounding_cat > 0[
+      set x patch-right-and-ahead 90 3
+    ][ set x patch-ahead 1 ]
     move-to x
   ]
 end
@@ -115,6 +115,7 @@ to set-target [ target ]
     ; basicamente se não existir presa cria tenta encontrar um novo target
     ifelse target != nobody [
       face target
+      move-to target
     ]
     [
       link-target
@@ -122,7 +123,7 @@ to set-target [ target ]
   ]
 end
 
-; mirar presa
+; rational behaviour for setting the cat target
 to link-target
   if ativateRationalBehaviour = true [
     create-link-to one-of mice
@@ -210,7 +211,7 @@ N-mice
 N-mice
 0
 20
-15.0
+2.0
 1
 1
 NIL
@@ -225,7 +226,7 @@ N-cats
 N-cats
 0
 10
-2.0
+1.0
 1
 1
 NIL

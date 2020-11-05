@@ -52,22 +52,23 @@ to go
   if count cats = 0 [stop]
 end
 
-
 ; mover rato
 ; aqui vamos definir planos de fuga
 ; mudanças de cadência
 to move-mice
   ask mice[
     let x one-of neighbors
-    let surrounding_cat sum [count cats] of neighbors
-    ifelse surrounding_cat > 0[
-      set x patch-right-and-ahead 90 3
-    ][ set x patch-ahead 1 ]
 
     if mutacaoPercecaoRato = true [
       setup-mutation-perception "mice"
     ]
-    move-to x
+
+    ifelse comportamentoRacionalRato = true [
+       setup-rational-mouse
+    ][
+      move-to x
+    ]
+
   ]
 end
 
@@ -79,10 +80,10 @@ to move-cats
     let prey one-of out-link-neighbors
     set-target prey
 
-    if patch-ahead 1 != nobody [
+    if patch-ahead velocity != nobody [
       set a patch-ahead velocity
     ]
-    if patch-ahead 2 != nobody [
+    if patch-ahead (velocity + 1) != nobody [
       set b patch-ahead (velocity + 1)
     ]
     if patch-right-and-ahead 90 velocity != nobody [
@@ -112,14 +113,12 @@ to move-cats
   ]
 end
 
-
 ; definir target ou correr atrás do target
-to set-target [ target ]
-  if ativateRationalBehaviour = true [
-    ; basicamente se não existir presa cria tenta encontrar um novo target
-    ifelse target != nobody [
-      face target
-      move-to target
+to set-target [ prey ]
+  if comportamentoRacionalGato = true [
+    ; se não existir presa cria tenta encontrar um novo target
+    ifelse prey != nobody [
+      face prey
     ]
     [
       link-target
@@ -129,18 +128,16 @@ end
 
 ; rational behaviour for setting the cat target
 to link-target
-  if ativateRationalBehaviour = true [
+  if comportamentoRacionalGato = true [
     create-link-to one-of mice
   ]
 end
-
-
 
 ; se o gato estiver em cima do rato , o rato morre
 to lunch-time
   ask mice[
     if any? cats-on neighbors [die]
-    if any? cats-on patch-here [die]
+    if mutacaoPercecaoGato = true [if any? cats-on patch-here [die]]
   ]
 end
 
@@ -156,48 +153,63 @@ end
 
 ; faz o setup da mutação da perceção nos agentes passados em argumento
 to setup-mutation-perception [agent]
+
   let perception 2
   let chunk_degree 22.5
   let degree_acc 0
 
-  while [degree_acc <= 360] [
-    ifelse agent = "cats" [
-      ;if patch-ahead 2 != nobody [
-      ;  set b patch-ahead (perception)
-      ;]
 
-      ask cats [
+  ifelse agent = "cats" [
+     while [degree_acc <= 360] [
+
         if any? mice-on patch-right-and-ahead degree_acc perception [
+          print 2
           move-to patch-right-and-ahead degree_acc perception
         ]
-      ]
-
-    ][
-      ask mice [
-        let mice_front_perception 3
-        let front_perception_chunk 15
-        let front_perception_degree_acc 30
-
-        while [front_perception_degree_acc <= -30][
-          ask patch-right-and-ahead front_perception_degree_acc mice_front_perception [
-            set pcolor red
-          ]
-
-          if any? cats-on patch-right-and-ahead front_perception_degree_acc mice_front_perception [
-            set heading 90
-            move-to patch-right-and-ahead 0 perception
-          ]
-
-          set front_perception_degree_acc (front_perception_degree_acc - front_perception_chunk)
+        if any? mice-on neighbors [
+          move-to patch-right-and-ahead degree_acc perception
         ]
 
-
-
-
-      ]
+      set degree_acc (degree_acc + chunk_degree)
     ]
-    set degree_acc (degree_acc + chunk_degree)
-   ]
+  ][
+    let mice_front_perception 3
+    let front_perception_chunk 15
+
+    while [mice_front_perception >= 1] [
+      let front_perception_degree_acc 45
+
+      if mice_front_perception = 2 [
+        set front_perception_chunk 22.5
+      ]
+
+      if mice_front_perception = 1 [
+        set front_perception_chunk 45
+      ]
+
+      while [front_perception_degree_acc >= -45][
+        if any? cats-on patch-right-and-ahead front_perception_degree_acc mice_front_perception [
+          move-to patch-right-and-ahead 135 perception
+        ]
+        set front_perception_degree_acc (front_perception_degree_acc - front_perception_chunk)
+      ]
+      set mice_front_perception (mice_front_perception - 1)
+    ]
+  ]
+
+end
+
+; antes de executar a ação definitiva, verifica se existe um gato na vizinhança
+to setup-rational-mouse
+    let x one-of neighbors
+    let initial_position patch-here
+
+    move-to x
+
+    if any? cats-on neighbors [
+        move-to initial_position
+        move-to patch-right-and-ahead 135 1
+    ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -236,7 +248,7 @@ N-mice
 N-mice
 0
 20
-2.0
+12.0
 1
 1
 NIL
@@ -258,10 +270,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-118
-375
-246
-442
+518
+82
+675
+149
 NIL
 setup\n
 NIL
@@ -275,10 +287,10 @@ NIL
 1
 
 BUTTON
-255
-375
-391
-441
+517
+163
+676
+229
 NIL
 go
 T
@@ -292,10 +304,10 @@ NIL
 1
 
 MONITOR
+518
 10
-500
-638
-545
+675
+55
 NIL
 ticks
 17
@@ -303,10 +315,10 @@ ticks
 11
 
 PLOT
-11
-578
-639
-834
+8
+275
+669
+606
 População
 Time
 Animais
@@ -352,21 +364,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-281
-281
-471
-314
-mutacaoVelocidadeRato
-mutacaoVelocidadeRato
-1
-1
--1000
-
-SWITCH
-12
-282
-200
-315
+9
+234
+203
+267
 mutacaoVelocidadeGato
 mutacaoVelocidadeGato
 1
@@ -375,94 +376,45 @@ mutacaoVelocidadeGato
 
 SWITCH
 280
-240
+192
 471
-273
+225
 mutacaoPercecaoRato
 mutacaoPercecaoRato
-0
+1
 1
 -1000
 
 SWITCH
-12
-241
-201
-274
+9
+193
+204
+226
 mutacaoPercecaoGato
 mutacaoPercecaoGato
-0
+1
 1
 -1000
 
-SLIDER
-13
-124
-201
-157
-maxEnergiaGato
-maxEnergiaGato
-0
-100
-50.0
-5
+SWITCH
+9
+139
+204
+172
+comportamentoRacionalGato
+comportamentoRacionalGato
 1
-NIL
-HORIZONTAL
+1
+-1000
 
-SLIDER
-280
-125
+SWITCH
+281
+139
 470
-158
-maxEnergiaRato
-maxEnergiaRato
-0
-100
-50.0
-5
+172
+comportamentoRacionalRato
+comportamentoRacionalRato
 1
-NIL
-HORIZONTAL
-
-SLIDER
-13
-166
-200
-199
-energiaConsumidaNoGatoPorAcao
-energiaConsumidaNoGatoPorAcao
-0
-100
-50.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-280
-175
-474
-208
-energiaConsumidaNoRatoPorAcao
-energiaConsumidaNoRatoPorAcao
-0
-100
-50.0
-1
-1
-NIL
-HORIZONTAL
-
-SWITCH
-11
-322
-206
-355
-ativateRationalBehaviour
-ativateRationalBehaviour
-0
 1
 -1000
 

@@ -19,6 +19,17 @@ to setup-patches
     ifelse pxcor mod 2 = 0
     [set pcolor x]
     [set pcolor y]
+
+    if random 100 < nrArmadilhas
+    [
+      set pcolor red
+    ]
+
+    if random 100 < nrRefugios
+    [
+      set pcolor green
+    ]
+
   ]
 end
 
@@ -46,6 +57,7 @@ end
 to go
   move-mice
   move-cats
+  kill-agents-in-traps
   lunch-time
   tick
   if count mice = 0 [stop]
@@ -211,6 +223,12 @@ to setup-rational-mouse
         move-to patch-right-and-ahead 135 1
     ]
 end
+
+to kill-agents-in-traps
+  ask cats [
+    if [pcolor] of patch-here = red [die]
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 699
@@ -341,7 +359,7 @@ SLIDER
 nrArmadilhas
 nrArmadilhas
 0
-100
+10
 0.0
 1
 1
@@ -356,7 +374,7 @@ SLIDER
 nrRefugios
 nrRefugios
 0
-100
+10
 0.0
 1
 1
@@ -403,7 +421,7 @@ SWITCH
 172
 comportamentoRacionalGato
 comportamentoRacionalGato
-1
+0
 1
 -1000
 

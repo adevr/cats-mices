@@ -25,11 +25,6 @@ to setup-patches
       set pcolor red
     ]
 
-    if random 100 < nrRefugios
-    [
-      set pcolor green
-    ]
-
   ]
 end
 
@@ -354,25 +349,10 @@ PENS
 SLIDER
 12
 60
-206
+476
 93
 nrArmadilhas
 nrArmadilhas
-0
-10
-0.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-281
-59
-473
-92
-nrRefugios
-nrRefugios
 0
 10
 0.0
